@@ -20,7 +20,7 @@ export interface Config {
 }
 
 export const Config: Schema<Config> = Schema.object({
-  host: Schema.string().description('如果koishi和dst服务器在一台机器上则无需改动').default('localhost'),
+  host: Schema.string().description('如果koishi和dst服务器在一台机器上则无需改动,更改后需要重启koishi').default('127.0.0.1'),
   dstPort: Schema.number().description('dst端口(一路444)').default(16444),
   botId: Schema.string().required().description('机器人的QQ号'),
   groupId: Schema.string().required().description('群号'),
