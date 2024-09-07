@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dst-forward",
   "description": "饥荒与qq互通聊天,保存回档重置",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -17,7 +17,7 @@
     "onebot"
   ],
   "peerDependencies": {
-    "koishi": "^4.0.0"
+    "koishi": "^4.15.1"
   },
   "dependencies": {
     "http": "^0.0.1-security"

@@ -12,6 +12,7 @@ export const usage = `
 教程制作中...
 `
 export interface Config {
+  host: string
   dstPort: number
   botId: string
   groupId: string
@@ -19,6 +20,7 @@ export interface Config {
 }
 
 export const Config: Schema<Config> = Schema.object({
+  host: Schema.string().description('如果koishi和dst服务器在一台机器上则无需改动').default('localhost'),
   dstPort: Schema.number().description('dst端口(一路444)').default(16444),
   botId: Schema.string().required().description('机器人的QQ号'),
   groupId: Schema.string().required().description('群号'),
@@ -90,17 +92,17 @@ export function apply(ctx: Context, conf: Config) {
         res.writeHead(405, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Method Not Allowed' }));  // 返回 405 错误
       }
-    }).listen(conf.dstPort, () => {
-      console.log(`Server running on http://localhost:${conf.dstPort}`);
+    }).listen(conf.dstPort, conf.host, () => {
+      ctx.logger("dst-forward").info(`Server running on http://${conf.host}:${conf.dstPort}`);
     });
   }
 }
 
 async function sendComm(argv: any, ctx: Context, msg: string) {
   //群号
-  const groupId = argv.session.onebot.group_id;
+  //const groupId = argv.session.onebot.group_id;
   //发送者id
-  const userId = argv.session.onebot.user_id.toString();
+  //const userId = argv.session.onebot.user_id.toString();
   //发送者身份 owner 或 admin 或 member,如果在白名单则无视权限
   var userRole = argv.session.onebot.sender.role
 
@@ -108,7 +110,7 @@ async function sendComm(argv: any, ctx: Context, msg: string) {
     return '非管理无法操作喵';
   }
   if (argv.options.roll) {
-    console.log('roll' + msg);
+    ctx.logger("dst-forward").info(`收到 roll...`);
     if (!msg) {
       await argv.session.send('请输入回档天数:')
       msg = await argv.session.prompt(20000)
@@ -120,14 +122,14 @@ async function sendComm(argv: any, ctx: Context, msg: string) {
     messageArray.add('rollback', msg, true)
     return `正在回档${msg}天...`
   } else if (argv.options.reset) {
-    console.log("reset");
+    ctx.logger("dst-forward").info(`收到 reset...`);
     await argv.session.send('警告,确定要重置整个世界吗？ (输入Y确认)')
     const confirm = await argv.session.prompt(20000)
     if (!confirm || confirm.toLowerCase() != 'y') return '已取消重置'
     messageArray.add('reset', '', true)
     return `正在重置世界...`
   } else if (argv.options.save) {
-    console.log("save");
+    ctx.logger("dst-forward").info(`收到 save...`);
     await argv.session.send('确定要保存吗？ (输入Y确认)')
     const confirm = await argv.session.prompt(20000)
     if (!confirm || confirm.toLowerCase() != 'y') return '已取消保存'
