@@ -9,7 +9,7 @@ export const usage = `
 轻松实现饥荒服务器与qq互通聊天
 需要在饥荒服务端中安装mod:DST TO QQ
 需要onebot适配器
-教程制作中...
+[部署详细教程](101.132.253.14/archives/143)
 `
 export interface Config {
   host: string
