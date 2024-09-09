@@ -7,6 +7,9 @@
 可让qq与饥荒互通消息,在qq中执行回档保存重置指令
 需要在饥荒联机版安装mod:DST TO QQ
 
+## 部署详细教程
+[点这里](http://101.132.253.14/archives/143)
+
 ## 其他 
 如果有问题欢迎提出[Issue](https://github.com/LingLambda/koishi-plugin-gatheringhub-helper/issues)  
 不管有没有问题都欢迎通过abc1514671906@163.com联系我
