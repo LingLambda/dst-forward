@@ -61,6 +61,7 @@ export function apply(ctx: Context, conf: Config) {
 
   // 仅在服务器未创建时创建服务器
   if (!server) {
+    ctx.logger("dst-forward").info(`运行接口服务`);
     server = http.createServer((req, res) => {
       if (req.method === 'POST') {
         if (req.url === '/send_msg') {
@@ -68,11 +69,13 @@ export function apply(ctx: Context, conf: Config) {
           req.on('data', chunk => body += chunk);
           req.on('end', () => {
             const parsedBody = JSON.parse(body);  // 解析 JSON
+            ctx.logger("dst-forward").info(`收到dst消息${parsedBody.message.toString()}`);
             if (!parsedBody) {
               res.writeHead(400, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ error: 'Invalid JSON' }));  // 返回 400 错误
               return;
             }
+            ctx.logger("dst-forward").info(`向群发送消息${parsedBody.message.toString()}`);
             // 向群发送消息
             bot.internal.sendGroupMsg(conf.groupId, parsedBody.message.toString());
             res.writeHead(200, { 'Content-Type': 'application/json' });
