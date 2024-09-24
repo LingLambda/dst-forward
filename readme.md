@@ -31,8 +31,6 @@
 
 ## 🛠 其他信息
 
-如果在使用中遇到问题，欢迎通过以下方式联系我们：
-
 - 如有问题，欢迎提出 [issue](https://github.com/ling/koishi-plugin-hellomorning/issues)。
 
 - 不管有没有问题都欢迎通过邮件联系我: [abc1514671906@163.com](mailto:abc1514671906@163.com)
