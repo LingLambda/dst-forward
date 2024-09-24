@@ -1,21 +1,44 @@
-# koishi-plugin-dst-forward
+# Koishi Plugin DST Forward
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-dst-forward?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-dst-forward)
+[![License](https://img.shields.io/npm/l/koishi-plugin-dst-forward?style=flat-square)](LICENSE)
 
+---
 
-## 介绍  
-可让qq与饥荒互通消息,在qq中执行回档保存重置指令
-需要在饥荒联机版安装mod:DST TO QQ
+## 🌟 介绍
 
-## 视频预览
-[视频预览](http://101.132.253.14/wp-content/uploads/2024/09/9月24日1.mp4)
+**Koishi Plugin DST Forward** 是一个koishi插件，能够在 **QQ** 和 **饥荒联机版**（DST）之间实现消息互通，并且允许你通过 QQ 执行回档、保存、重置等指令。  
+为了实现这些功能，还需要在饥荒联机版中安装 **MOD: DST TO QQ**。
 
-## 部署详细教程
-[点这里](http://101.132.253.14/archives/143)
+---
 
-## 其他 
-如果有问题欢迎提出[Issue](https://github.com/LingLambda/koishi-plugin-gatheringhub-helper/issues)  
-不管有没有问题都欢迎通过abc1514671906@163.com联系我
+## 🎬 视频预览
 
-## License
-[MIT](LICENSE) License Copyright (c) 2024 ling
+[点击这里查看视频预览](http://101.132.253.14/wp-content/uploads/2024/09/9月24日1.mp4)
+
+---
+
+## 🚀 部署详细教程
+
+请参考我们的[教程](http://101.132.253.14/archives/143)来完成插件的部署。
+
+---
+
+## ✅ TODO
+- [ ] 封禁玩家
+- [ ] 多服务器支持
+---
+
+## 🛠 其他信息
+
+如果在使用中遇到问题，欢迎通过以下方式联系我们：
+
+- 如有问题，欢迎提出 [issue](https://github.com/ling/koishi-plugin-hellomorning/issues)。
+
+- 不管有没有问题都欢迎通过邮件联系我: [abc1514671906@163.com](mailto:abc1514671906@163.com)
+
+---
+
+## 📄 License
+
+此项目采用 [MIT](LICENSE) 协议，版权所有 © 2024 **Ling**。
