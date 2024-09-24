@@ -8,7 +8,7 @@
 需要在饥荒联机版安装mod:DST TO QQ
 
 ## 视频预览
-![视频预览](./video/video1.gif)
+[视频预览](http://101.132.253.14/wp-content/uploads/2024/09/9月24日1.mp4)
 
 ## 部署详细教程
 [点这里](http://101.132.253.14/archives/143)
