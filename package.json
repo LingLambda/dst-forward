@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dst-forward",
   "description": "饥荒与qq互通聊天,保存回档重置",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

@@ -79,12 +79,12 @@ export function apply(ctx: Context, conf: Config) {
 
     //检查是否启用分群配置
     if (!conf.groupSeparate) {
-      ctx.logger("dst-forward").info(userInfo + "addArray:" + session.content + " don't has serverNumber ");
+      ctx.logger("dst-forward").info(userInfo + "addArray:" + content+ " don't has serverNumber ");
       messageArray.add(userInfo, content, null)
     } else {
       conf.groupArray.forEach(element => {
         if (element.groupId === groupId.toString()) {
-          ctx.logger("dst-forward").info(userInfo + "addArray:" + session.content + " serverNumber:" + element.serverNumber);
+          ctx.logger("dst-forward").info(userInfo + "addArray:" + content + " serverNumber:" + element.serverNumber);
           messageArray.add(userInfo, content, element.serverNumber);
         }
       });
@@ -120,7 +120,8 @@ export function apply(ctx: Context, conf: Config) {
   // 获取消息的 POST 路由
   router.post('/get_msg', async (routerCtx) => {
     //如果启用了分群配置,获取服务器号,否则直接赋null,给数组传serverNumber为null会使得每次获取删除消息都对整个数组操作
-    const { serverId } = conf.groupSeparate ? routerCtx.request.body : null;
+    const serverId = conf.groupSeparate && routerCtx.request.body ? routerCtx.request.body.serverId : null;
+    ctx.logger("dst-forward").info(`收到 get_msg,分群配置为${conf.groupSeparate},serverId:${serverId} `);
     const messages = messageArray.getItems(serverId);
     messageArray.clear(serverId); // 清空消息数组
 
