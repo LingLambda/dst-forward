@@ -1,35 +1,60 @@
-import { Context, Schema } from 'koishi'
+import { Context, Dict, Schema } from 'koishi'
 import type { OneBotBot } from 'koishi-plugin-adapter-onebot'
 
 import { FixedSizeArray } from './FixedSizeArray';
+import { log } from 'console';
 
 export const name = 'dst-forward'
 export const inject = {
   required: ['server']
 }
 export const usage = `
-轻松实现饥荒服务器与qq互通聊天
-需要在饥荒服务端中安装mod:DST TO QQ
-需要onebot适配器
+轻松实现饥荒服务器与qq互通聊天<br/>
+需要在饥荒服务端中安装mod:DST TO QQ<br/>
+如果开启了分群配置,当serverNumber与dst服务器中设置相同时才会发送,可设置群聊与服务器一对一,一对多,多对一,多对多<br/>
+需要onebot适配器<br/>
 [部署详细教程](101.132.253.14/archives/143)
 `
 export interface Config {
   botId: string
   groupId: string
   tag: string
+  groupSeparate: boolean
+  groupArray: Array<{
+    groupId: string,
+    serverNumber: number
+  }>
 }
 
-export const Config: Schema<Config> = Schema.object({
-  botId: Schema.string().required().description('机器人的QQ号'),
-  groupId: Schema.string().required().description('群号'),
-  tag: Schema.string().description('以此符号开头的消息会被传到服务器中,为空的话每条消息都会进去').default('#'),
-})
+
+export const Config = Schema.intersect([
+  Schema.object({
+    botId: Schema.string().required().description('机器人的QQ号'),
+    groupId: Schema.string().required().description('群号'),
+    tag: Schema.string().description('以此符号开头的消息会被传到服务器中,为空的话每条消息都会进去').default('#'),
+  }).description('基础配置'),
+  Schema.object({
+    groupSeparate: Schema.boolean().default(false).description('开启分群配置(开启后上面的群号设置无效)'),
+  }).description('分群配置'),
+  Schema.union([
+    Schema.object({
+      groupSeparate: Schema.const(true).required(),
+      groupArray: Schema.array(Schema.object({
+        groupId: Schema.string().description("群号").required(),
+        serverNumber: Schema.number().description("服务号(需要和dstmod设置里对应)").required(),
+      })).role('table')
+    }),
+    Schema.object({}),
+  ])
+])
+
 
 // 声明一个固定数组,缓存最近的指令消息
-const messageArray = new FixedSizeArray(3);
+const messageArray = new FixedSizeArray(6);
 
 
 export function apply(ctx: Context, conf: Config) {
+
   const bot = ctx.bots[`onebot:${conf.botId}`] as OneBotBot<Context>;
 
   ctx.command('dst <msg:string>', 'dst-forward房间操作').alias('饥荒')
@@ -38,20 +63,30 @@ export function apply(ctx: Context, conf: Config) {
     .option('save', '-s 保存')
     .action((argv, msg) => sendComm(argv, ctx, msg))
 
-  //中间件
+  //中间件,拦截群聊消息并放到消息栈
   ctx.middleware((session) => {
     //获取发送者群名片,如无群名片则用昵称
-    let userInfo = session.onebot.sender.card ? session.onebot.sender.card : session.onebot.sender.nickname
-    //判断是否以占位符开头
-    if (!conf.tag) {
-      ctx.logger.info(userInfo + "addArray:" + session.content);
-      messageArray.add(userInfo, session.content);
-      return;
+    let userInfo = session.onebot.sender.card ? session.onebot.sender.card : session.onebot.sender.nickname;
+    let groupId = session.onebot.group_id;
+    // 检查是否启用了发送前缀
+    let content: string;
+    if (session.content && !conf.tag) {
+      content = session.content;
+    } else if (session.content && session.content.charAt(0) === conf.tag) {
+      content = session.content.slice(1);
     }
-    else if (session.content && session.content.charAt(0) === conf.tag) {
-      ctx.logger.info(userInfo + "addArray:" + session.content);
-      messageArray.add(userInfo, session.content.slice(1));
-      return;
+
+    //检查是否启用分群配置
+    if (!conf.groupSeparate) {
+      ctx.logger("dst-forward").info(userInfo + "addArray:" + session.content + " don't has serverNumber ");
+      messageArray.add(userInfo, content, null)
+    } else {
+      conf.groupArray.forEach(element => {
+        if (element.groupId === groupId.toString()) {
+          ctx.logger("dst-forward").info(userInfo + "addArray:" + session.content + " serverNumber:" + element.serverNumber);
+          messageArray.add(userInfo, content, element.serverNumber);
+        }
+      });
     }
   });
 
@@ -59,23 +94,34 @@ export function apply(ctx: Context, conf: Config) {
   const router = ctx.server;
   // 发送消息的 POST 路由
   router.post('/send_msg', async (routerCtx) => {
-    const { message } = routerCtx.request.body;
+    const { message, serverNumber } = routerCtx.request.body;
 
     if (!message) {
       routerCtx.status = 400;
       routerCtx.body = { error: 'Invalid JSON' };
       return;
     }
-    ctx.logger.info(`收到了dst消息: ${message}`);
-    bot.internal.sendGroupMsg(conf.groupId, message.toString());
-    ctx.logger.info(`向群发送了消息: ${message}`);
+    ctx.logger("dst-forward").info(`收到了来自:${serverNumber}的dst消息: ${message}`);
+    if (!conf.groupSeparate) {
+      bot.internal.sendGroupMsg(conf.groupId, message.toString());
+      ctx.logger("dst-forward").info(`向群:${conf.groupId} 发送了消息:${message}`);
+    } else {
+      conf.groupArray.forEach(element => {
+        if (element.serverNumber === serverNumber) {
+          bot.internal.sendGroupMsg(element.groupId, message.toString());
+          ctx.logger("dst-forward").info(`向群:${element.groupId} 发送了消息:${message}`);
+        }
+      });
+    }
     routerCtx.status = 200;
     routerCtx.body = { success: true };
   });
-  // 获取消息的 GET 路由
-  router.get('/get_msg', async (routerCtx) => {
-    const messages = messageArray.getItems();
-    messageArray.clear(); // 清空消息数组
+  // 获取消息的 POST 路由
+  router.post('/get_msg', async (routerCtx) => {
+    //如果启用了分群配置,获取服务器号,否则直接赋null,给数组传serverNumber为null会使得每次获取删除消息都对整个数组操作
+    const { serverNumber } = conf.groupSeparate ? routerCtx.request.body : null;
+    const messages = messageArray.getItems(serverNumber);
+    messageArray.clear(serverNumber); // 清空消息数组
     routerCtx.status = 200;
     routerCtx.body = { success: true, messages };
   });
