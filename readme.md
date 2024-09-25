@@ -34,6 +34,7 @@
 ---
 
 ## 🛠 其他信息
+- **[DST TO QQ mod](https://github.com/LingLambda/DST-TO-QQ)**
 
 - 如有问题，欢迎提出 [issue](https://github.com/ling/koishi-plugin-hellomorning/issues)。
 
