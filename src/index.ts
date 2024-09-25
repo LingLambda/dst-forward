@@ -12,6 +12,7 @@ export const usage = `
 轻松实现饥荒服务器与qq互通聊天<br/>
 需要在饥荒服务端中安装mod:DST TO QQ<br/>
 如果开启了分群配置,当serverNumber与dst服务器中设置相同时才会发送,可设置群聊与服务器一对一,一对多,多对一,多对多<br/>
+每次修改配置后最好是重启koishi一次<br/>
 需要onebot适配器<br/>
 [部署详细教程](101.132.253.14/archives/143)
 `
@@ -95,20 +96,20 @@ export function apply(ctx: Context, conf: Config) {
   const router = ctx.server;
   // 发送消息的 POST 路由
   router.post('/send_msg', async (routerCtx) => {
-    const { message, serverNumber } = routerCtx.request.body;
+    const { message, serverId } = routerCtx.request.body;
 
     if (!message) {
       routerCtx.status = 400;
       routerCtx.body = { error: 'Invalid JSON' };
       return;
     }
-    ctx.logger("dst-forward").info(`收到了来自:${serverNumber}的dst消息: ${message}`);
+    ctx.logger("dst-forward").info(`收到了来自:${serverId}的dst消息: ${message}`);
     if (!conf.groupSeparate) {
       bot.internal.sendGroupMsg(conf.groupId, message.toString());
       ctx.logger("dst-forward").info(`向群:${conf.groupId} 发送了消息:${message}`);
     } else {
       conf.groupArray.forEach(element => {
-        if (element.serverNumber === serverNumber) {
+        if (element.serverNumber === serverId) {
           bot.internal.sendGroupMsg(element.groupId, message.toString());
           ctx.logger("dst-forward").info(`向群:${element.groupId} 发送了消息:${message}`);
         }
@@ -120,10 +121,10 @@ export function apply(ctx: Context, conf: Config) {
   // 获取消息的 POST 路由
   router.post('/get_msg', async (routerCtx) => {
     //如果启用了分群配置,获取服务器号,否则直接赋null,给数组传serverNumber为null会使得每次获取删除消息都对整个数组操作
-    const { serverNumber } = conf.groupSeparate ? routerCtx.request.body : null;
-
-    const messages = messageArray.getItems(serverNumber);
-    messageArray.clear(serverNumber); // 清空消息数组
+    const { serverId } = conf.groupSeparate ? routerCtx.request.body : null;
+    console.log("ser"+serverId);
+    const messages = messageArray.getItems(serverId);
+    messageArray.clear(serverId); // 清空消息数组
 
     routerCtx.status = 200;
     routerCtx.body = { success: true, messages };
