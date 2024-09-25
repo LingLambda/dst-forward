@@ -1,8 +1,7 @@
-import { Context, Dict, Schema } from 'koishi'
+import { Context, Schema } from 'koishi'
 import type { OneBotBot } from 'koishi-plugin-adapter-onebot'
 
 import { FixedSizeArray } from './FixedSizeArray';
-import { log } from 'console';
 
 export const name = 'dst-forward'
 export const inject = {
@@ -122,7 +121,6 @@ export function apply(ctx: Context, conf: Config) {
   router.post('/get_msg', async (routerCtx) => {
     //如果启用了分群配置,获取服务器号,否则直接赋null,给数组传serverNumber为null会使得每次获取删除消息都对整个数组操作
     const { serverId } = conf.groupSeparate ? routerCtx.request.body : null;
-    console.log("ser"+serverId);
     const messages = messageArray.getItems(serverId);
     messageArray.clear(serverId); // 清空消息数组
 
@@ -157,7 +155,7 @@ async function sendComm(argv: any, ctx: Context, conf: Config, msg: string) {
     return '非管理无法操作喵';
   }
   if (argv.options.roll) {
-    ctx.logger.info(`收到 roll...`);
+    ctx.logger("dst-forward").info(`收到 roll...`);
     if (!msg) {
       await argv.session.send('请输入回档天数:')
       msg = await argv.session.prompt(20000)
@@ -179,7 +177,7 @@ async function sendComm(argv: any, ctx: Context, conf: Config, msg: string) {
     messageArray.add('rollback', msg, serverId, true)
     return `正在回档${msg}天...`
   } else if (argv.options.reset) {
-    ctx.logger.info(`收到 reset...`);
+    ctx.logger("dst-forward").info(`收到 reset...`);
     if (conf.groupSeparate) {
       await argv.session.send(`请输入服务器号,当前可用服务器号:${serverIds}`)
       serverId = await argv.session.prompt(20000)
@@ -196,7 +194,7 @@ async function sendComm(argv: any, ctx: Context, conf: Config, msg: string) {
     messageArray.add('reset', '', serverId, true)
     return `正在重置世界...`
   } else if (argv.options.save) {
-    ctx.logger.info(`收到 save...`);
+    ctx.logger("dst-forward").info(`收到 save...`);
     if (conf.groupSeparate) {
       await argv.session.send(`请输入服务器号,当前可用服务器号:${serverIds}`)
       serverId = await argv.session.prompt(20000)
@@ -210,7 +208,7 @@ async function sendComm(argv: any, ctx: Context, conf: Config, msg: string) {
     messageArray.add('save', '', serverId, true)
     return `正在保存...`
   }else if(argv.options.ban){
-    ctx.logger.info(`收到 ban...`);
+    ctx.logger("dst-forward").info(`收到 ban...`);
     if (!msg) {
       await argv.session.send('请输入封禁玩家的klei id:')
       msg = await argv.session.prompt(20000)
