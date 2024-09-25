@@ -12,7 +12,7 @@ export class FixedSizeArray {
         }
         this.items.push([sender, content, serverNumber, isComm ? isComm : false]);
     }
-
+    
     getItems(serverNumber: number): [string, string, number, boolean][] {
         if (serverNumber === undefined) {
             return this.items;

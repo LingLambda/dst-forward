@@ -61,7 +61,8 @@ export function apply(ctx: Context, conf: Config) {
     .option('roll', '-r  回档 (天数)')
     .option('reset', '-e 重置世界')
     .option('save', '-s 保存')
-    .action((argv, msg) => sendComm(argv, ctx, msg))
+    .option('ban', '-b 封禁 (科雷id)')
+    .action((argv, msg) => sendComm(argv, ctx, conf, msg))
 
   //中间件,拦截群聊消息并放到消息栈
   ctx.middleware((session) => {
@@ -120,8 +121,10 @@ export function apply(ctx: Context, conf: Config) {
   router.post('/get_msg', async (routerCtx) => {
     //如果启用了分群配置,获取服务器号,否则直接赋null,给数组传serverNumber为null会使得每次获取删除消息都对整个数组操作
     const { serverNumber } = conf.groupSeparate ? routerCtx.request.body : null;
+
     const messages = messageArray.getItems(serverNumber);
     messageArray.clear(serverNumber); // 清空消息数组
+
     routerCtx.status = 200;
     routerCtx.body = { success: true, messages };
   });
@@ -131,13 +134,23 @@ export function apply(ctx: Context, conf: Config) {
   app.use(router.allowedMethods());
 }
 
-async function sendComm(argv: any, ctx: Context, msg: string) {
+async function sendComm(argv: any, ctx: Context, conf: Config, msg: string) {
   //群号
   //const groupId = argv.session.onebot.group_id;
   //发送者id
   //const userId = argv.session.onebot.user_id.toString();
   //发送者身份 owner 或 admin 或 member,如果在白名单则无视权限
   var userRole = argv.session.onebot.sender.role
+  let groupId = argv.session.onebot.group_id;
+  //本群可用的服务器号
+  let serverIds = null;
+  //指令指定的服务器号
+  let serverId = null;
+  conf.groupArray.forEach(element => {
+    if (element.groupId === groupId.toString()) {
+      serverIds = serverIds + element.serverNumber + ",";
+    }
+  });
 
   if (userRole == "member") {
     return '非管理无法操作喵';
@@ -149,25 +162,75 @@ async function sendComm(argv: any, ctx: Context, msg: string) {
       msg = await argv.session.prompt(20000)
       if (!msg) return '输入超时, 已取消回档'
     }
-    await argv.session.send('确定要回档' + msg + '天吗？ (输入Y确认)')
+    if (conf.groupSeparate) {
+      await argv.session.send(`请输入服务器号,当前可用服务器号:${serverIds}`)
+      serverId = await argv.session.prompt(20000)
+      if (!conf.groupArray.some(e => e.serverNumber === serverId)) return '服务器号不存在,已取消回档'
+      if (!serverId) return '输入超时, 已取消回档'
+    }
+    if (!serverIds) {
+      await argv.session.send('确定要回档' + msg + '天吗？ (输入Y确认)')
+    } else {
+      await argv.session.send('确定要给' + serverId + '回档' + msg + '天吗？ (输入Y确认)')
+    }
     const confirm = await argv.session.prompt(20000)
     if (!confirm || confirm.toLowerCase() != 'y') return '已取消回档'
-    messageArray.add('rollback', msg, true)
+    messageArray.add('rollback', msg, serverId, true)
     return `正在回档${msg}天...`
   } else if (argv.options.reset) {
     ctx.logger.info(`收到 reset...`);
-    await argv.session.send('警告,确定要重置整个世界吗？ (输入Y确认)')
+    if (conf.groupSeparate) {
+      await argv.session.send(`请输入服务器号,当前可用服务器号:${serverIds}`)
+      serverId = await argv.session.prompt(20000)
+      if (!conf.groupArray.some(e => e.serverNumber === serverId)) return '服务器号不存在,已取消重置'
+      if (!serverId) return '输入超时, 已取消重置'
+    }
+    if (!serverId) {
+      await argv.session.send(`警告,确定要重置世界吗？ (输入Y确认)`)
+    } else {
+      await argv.session.send(`警告,确定要重置${serverId}世界吗？ (输入Y确认)`)
+    }
     const confirm = await argv.session.prompt(20000)
     if (!confirm || confirm.toLowerCase() != 'y') return '已取消重置'
-    messageArray.add('reset', '', true)
+    messageArray.add('reset', '', serverId, true)
     return `正在重置世界...`
   } else if (argv.options.save) {
     ctx.logger.info(`收到 save...`);
-    await argv.session.send('确定要保存吗？ (输入Y确认)')
-    const confirm = await argv.session.prompt(20000)
-    if (!confirm || confirm.toLowerCase() != 'y') return '已取消保存'
-    messageArray.add('save', '', true)
+    if (conf.groupSeparate) {
+      await argv.session.send(`请输入服务器号,当前可用服务器号:${serverIds}`)
+      serverId = await argv.session.prompt(20000)
+      if (!conf.groupArray.some(e => e.serverNumber === serverId)) return '服务器号不存在,已取消保存'
+      if (!serverId) return '输入超时, 已取消保存'
+    }
+    // await argv.session.send('确定要保存吗？ (输入Y确认)')
+    // const confirm = await argv.session.prompt(20000)
+    // if (!confirm || confirm.toLowerCase() != 'y') return '已取消保存'
+
+    messageArray.add('save', '', serverId, true)
     return `正在保存...`
+  }else if(argv.options.ban){
+    ctx.logger.info(`收到 ban...`);
+    if (!msg) {
+      await argv.session.send('请输入封禁玩家的klei id:')
+      msg = await argv.session.prompt(20000)
+      if (!msg) return '输入超时, 已取消封禁'
+    }
+    if (conf.groupSeparate) {
+      await argv.session.send(`请输入服务器号,当前可用服务器号:${serverIds}`)
+      serverId = await argv.session.prompt(20000)
+      if (!conf.groupArray.some(e => e.serverNumber === serverId)) return '服务器号不存在,已取消封禁'
+      if (!serverId) return '输入超时, 已取消封禁'
+    }
+    if (!serverIds) {
+      await argv.session.send('确定要封禁玩家' + msg + '吗？ (输入Y确认)')
+    } else {
+      await argv.session.send('确定要在' + serverId + '封禁玩家' + msg + '吗？ (输入Y确认)')
+    }
+    const confirm = await argv.session.prompt(20000)
+    if (!confirm || confirm.toLowerCase() != 'y') return '已取消封禁'
+    messageArray.add('ban', msg, serverId, true)
+    return `已封禁玩家${msg}`
   }
+  
   return '未指定操作 输入dst --help查看命令详细'
 }
