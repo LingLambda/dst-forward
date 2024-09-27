@@ -66,20 +66,25 @@ export function apply(ctx: Context, conf: Config) {
 
   //中间件,拦截群聊消息并放到消息栈
   ctx.middleware((session) => {
+    let message: any = session.onebot.message;
+    let content: string = null;
+    for (let i = 0; i < message.length; i++) {
+      if (message[i].type == "text") {
+        content = message[i].data.text;
+        ctx.logger("dst-forward").info("收到消息.." + content);
+        break;
+      }
+    }
+    // 不是文本消息直接无视
+    if (!content) return;
+    // 检查是否启用了发送前缀
+    if (conf.tag) content = content.slice(1);
     //获取发送者群名片,如无群名片则用昵称
     let userInfo = session.onebot.sender.card ? session.onebot.sender.card : session.onebot.sender.nickname;
     let groupId = session.onebot.group_id;
-    // 检查是否启用了发送前缀
-    let content: string;
-    if (session.content && !conf.tag) {
-      content = session.content;
-    } else if (session.content && session.content.charAt(0) === conf.tag) {
-      content = session.content.slice(1);
-    }
-
     //检查是否启用分群配置
     if (!conf.groupSeparate) {
-      ctx.logger("dst-forward").info(userInfo + "addArray:" + content+ " don't has serverNumber ");
+      ctx.logger("dst-forward").info(userInfo + "addArray:" + content + " don't has serverNumber ");
       messageArray.add(userInfo, content, null)
     } else {
       conf.groupArray.forEach(element => {
@@ -208,7 +213,7 @@ async function sendComm(argv: any, ctx: Context, conf: Config, msg: string) {
 
     messageArray.add('save', '', serverId, true)
     return `正在保存...`
-  }else if(argv.options.ban){
+  } else if (argv.options.ban) {
     ctx.logger("dst-forward").info(`收到 ban...`);
     if (!msg) {
       await argv.session.send('请输入封禁玩家的klei id:')
@@ -231,6 +236,6 @@ async function sendComm(argv: any, ctx: Context, conf: Config, msg: string) {
     messageArray.add('ban', msg, serverId, true)
     return `已封禁玩家${msg}`
   }
-  
+
   return '未指定操作 输入dst --help查看命令详细'
 }

@@ -7,7 +7,7 @@
 
 ## 🌟 介绍
 
-**Koishi Plugin DST Forward** 是一个koishi插件，能够在 **QQ** 和 **饥荒联机版**（DST）之间实现消息互通，并且允许你通过 QQ 执行回档、保存、重置等指令。  
+**Koishi Plugin DST Forward** 是一个koishi插件，能够在 **QQ** 和 **饥荒联机版**（DST）之间实现消息互通，并且允许你通过 QQ 执行回档、保存、重置、封禁等指令。  
 为了实现这些功能，还需要在饥荒联机版中安装 **MOD: DST TO QQ**。
 
 ---
@@ -36,7 +36,7 @@
 ## 🛠 其他信息
 - **[DST TO QQ mod](https://github.com/LingLambda/DST-TO-QQ)**
 
-- 如有问题，欢迎提出 [issue](https://github.com/ling/koishi-plugin-hellomorning/issues)。
+- 如有问题，欢迎提出 [issue](https://github.com/LingLambda/dst-forward/issues)。
 
 - 不管有没有问题都欢迎通过邮件联系我: [abc1514671906@163.com](mailto:abc1514671906@163.com)
 
