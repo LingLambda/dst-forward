@@ -154,6 +154,7 @@ async function sendComm(argv: any, ctx: Context, conf: Config, msg: string) {
   let serverIds = null;
   //指令指定的服务器号
   let serverId = null;
+  if(conf.groupSeparate)
   conf.groupArray.forEach(element => {
     if (element.groupId === groupId.toString()) {
       serverIds = serverIds + element.serverNumber + ",";
