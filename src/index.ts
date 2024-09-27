@@ -76,7 +76,10 @@ export function apply(ctx: Context, conf: Config) {
       }
     }
     // 不是文本消息直接无视
-    if (!content) return;
+    if (!content) {
+      ctx.logger("dst-forward").info("收到非文本消息,跳过");
+      return;
+    }
     // 检查是否启用了发送前缀
     if (conf.tag) content = content.slice(1);
     //获取发送者群名片,如无群名片则用昵称
