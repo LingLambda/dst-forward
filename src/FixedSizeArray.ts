@@ -11,17 +11,20 @@ export class FixedSizeArray {
             this.items.shift();  // 超过最大容量时移除第一个元素
         }
         this.items.push([sender, content, serverNumber, isComm ? isComm : false]);
+        console.log(this.items);
     }
     
     getItems(serverNumber: number): [string, string, number, boolean][] {
-        if (serverNumber === undefined) {
+        console.log("get getItems");
+        
+        if (serverNumber === -1 ) {
             return this.items;
         }
         return this.items.filter(item => item[2] === serverNumber);
     }
 
     clear(serverNumber: number): void {
-        if (serverNumber === null) {
+        if (serverNumber === -1) {
             this.items = [];
         } else {
             this.items = this.items.filter(item => item[2] !== serverNumber);
