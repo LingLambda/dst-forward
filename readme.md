@@ -29,8 +29,9 @@
 ---
 
 ## 🛠 其他信息
-- **[DST TO QQ mod](https://github.com/LingLambda/DST-TO-QQ)**
-
+- DST TO QQ MOD :
+**[创意工坊](https://steamcommunity.com/sharedfiles/filedetails/?id=3325514110)**
+**[Github](https://github.com/LingLambda/DST-TO-QQ)** 
 - 如有问题，欢迎提出 [issue](https://github.com/LingLambda/dst-forward/issues)。
 
 - 不管有没有问题都欢迎通过邮件联系我: [abc1514671906@163.com](mailto:abc1514671906@163.com)
