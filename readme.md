@@ -15,7 +15,7 @@
 
 ## 🚀 部署详细教程
 
-可参考[教程](https://blog.llma.top/posts/qq%E4%B8%8E%E9%A5%A5%E8%8D%92%E4%BA%92%E9%80%9A%E6%B6%88%E6%81%AF/)来完成部署。
+可参考[教程](https://blog.llma.top/blog/qq-yu-ji-huang-hu-tong-xiao-xi/)来完成部署。
 
 ---
 
